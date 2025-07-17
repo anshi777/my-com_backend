@@ -51,3 +51,53 @@ export const sendWelcomeEmail = async (email, name) => {
     console.log("Error while sending welcome email:", error);
   }
 };
+
+
+// mailer.js
+
+export const sendLoginMail = async (email, name) => {
+  try {
+    const response = await transporter.sendMail({
+      from: '"My-Comm" <anvishwakarma@bestpeers.com>',
+      to: email,
+      subject: "Login Successful - My-Comm",
+      text: `Hi ${name},\n\nWelcome back to My-Comm! Your login was successful.\n\nThanks,\nThe My-Comm Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #333;">Welcome Back to My-Comm, ${name}!</h2>
+          <p>Your login was successful.</p>
+          <p>We’re excited to see you again. Start exploring and make the most of your My-Comm experience.</p>
+          <p>If this wasn’t you, please secure your account immediately.</p>
+          <br/>
+          <p>Cheers,<br/>The My-Comm Team</p>
+        </div>
+      `,
+    });
+    console.log("Login email sent:", response.messageId);
+  } catch (error) {
+    console.error("Error while sending login email:", error);
+  }
+};
+
+export const sendLogoutMail = async (email, name) => {
+  try {
+    const response = await transporter.sendMail({
+      from: '"My-Comm" <anvishwakarma@bestpeers.com>',
+      to: email,
+      subject: "Logout Notification - My-Comm",
+      text: `Hi ${name},\n\nYou have successfully logged out from My-Comm.\n\nThanks,\nThe My-Comm Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #333;">You Logged Out, ${name}</h2>
+          <p>You’ve successfully logged out of your My-Comm account.</p>
+          <p>If this wasn’t you, please contact us immediately or change your password.</p>
+          <br/>
+          <p>Thanks for using My-Comm!<br/>The My-Comm Team</p>
+        </div>
+      `,
+    });
+    console.log("Logout email sent:", response.messageId);
+  } catch (error) {
+    console.error("Error while sending logout email:", error);
+  }
+};

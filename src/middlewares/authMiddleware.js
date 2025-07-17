@@ -7,7 +7,7 @@ export const authenticateUser = async (req, res, next) => {
     const token = req.cookies?.refreshToken;
 
     if (!token) {
-      throw new ApiError(401, "Access token missing. Please login.");
+    throw new ApiError(401, "Refresh token missing. Please login.");
     }
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN);
     if (!decoded) {

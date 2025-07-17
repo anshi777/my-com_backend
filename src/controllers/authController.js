@@ -1,4 +1,9 @@
-import { sendOtp, sendWelcomeEmail } from "../servicess/email.js";
+import {
+  sendOtp,
+  sendWelcomeEmail,
+  sendLoginMail,
+  sendLogoutMail,
+} from "../servicess/email.js";
 import AuthModel from "../models/authModel.js";
 import bcryptjs from "bcryptjs";
 import { generateOtp } from "../utils/Otp.js";
@@ -35,12 +40,20 @@ export const registerUser = asyncHandler(async (req, res) => {
     sendOtp(user.email, Otp);
     return res
       .status(201)
-      .json({ success: true, message: "user Register successfull...", user });
+      .json({
+        success: true,
+        message: "user Register successfull...",
+        data: user,
+      });
   } catch (error) {
     console.log(error, "something went wrong in server ...");
     return res
       .status(500)
-      .json({ success: false, message: "internal server error..." });
+      .json({
+        success: false,
+        message: "internal server error...",
+        data: error,
+      });
   }
 });
 
@@ -81,6 +94,11 @@ export const verification = async (req, res) => {
       });
   } catch (error) {
     console.log("verification failed for server error..", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while resending OTP.",
+      data: error,
+    });
   }
 };
 
@@ -124,6 +142,7 @@ export const resendOtp = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while resending OTP.",
+      data: error,
     });
   }
 };
@@ -161,6 +180,7 @@ export const loginAuth = async (req, res) => {
       httpOnly: true,
       secure: true,
     };
+    await sendLoginMail(email, user.name);
 
     return res
       .status(200)
@@ -174,7 +194,9 @@ export const loginAuth = async (req, res) => {
       });
   } catch (error) {
     console.log("User Login failed for server error..", error);
-    res.status(500).json({ success: false, message: "Server error." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error.", data: error });
   }
 };
 
@@ -189,11 +211,16 @@ export const logoutAuth = async (req, res) => {
         .json({ success: false, message: "Email is required." });
     }
 
-    await AuthModel.findOneAndUpdate(
+    const user = await AuthModel.findOneAndUpdate(
       { email, refreshToken },
       { $unset: { refreshToken: "" } },
       { new: true }
     );
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User Not Found..." });
+    }
     if (!refreshToken) {
       return res
         .status(401)
@@ -204,7 +231,7 @@ export const logoutAuth = async (req, res) => {
       secure: true,
       sameSite: "Strict",
     };
-
+    await sendLogoutMail(email, email.name);
     return res
       .status(200)
       .clearCookie("accessToken", options)
@@ -215,8 +242,12 @@ export const logoutAuth = async (req, res) => {
       });
   } catch (error) {
     console.log("Logout failed:", error);
-    res
+    return res
       .status(500)
-      .json({ success: false, message: "Server error during logout." });
+      .json({
+        success: false,
+        message: "Server error during logout.",
+        data: error,
+      });
   }
 };

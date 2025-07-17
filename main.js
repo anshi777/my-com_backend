@@ -2,6 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import dbCon from "./src/libs/db.js";
 import authRoute from "./src/routes/authRoute.js";
+import userRoute from "./src/routes/userRoute.js"
+import product from "./src/routes/productRoute.js"
 import cookieParser from "cookie-parser";
 import './src/servicess/emailConfig.js'
 
@@ -17,6 +19,8 @@ app.use(cookieParser())
 //*****************Routes********************
 
 app.use("/api/v1/auth", authRoute);
+app.use('/api/v1/user',userRoute);
+app.use("/api/v1/product",product)
 
 const PORT = process.env.PORT || 5000;
 
