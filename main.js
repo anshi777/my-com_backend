@@ -14,6 +14,7 @@ dbCon();
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
 //*****************Routes********************
@@ -21,6 +22,8 @@ app.use(cookieParser())
 app.use("/api/v1/auth", authRoute);
 app.use('/api/v1/user',userRoute);
 app.use("/api/v1/product",product)
+app.use("/uploads", express.static("uploads"));
+
 
 const PORT = process.env.PORT || 5000;
 

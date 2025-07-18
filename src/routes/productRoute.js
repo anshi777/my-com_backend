@@ -1,19 +1,21 @@
 import express from "express";
-import upload from "../utils/uploadCloudinary.js";
 import {
   createProduct,
   getAllProducts,
-  getProductById,
   updateProduct,
-  deleteProduct,
+  productDelete,
+  getproductById,
 } from "../controllers/productController.js";
+import upload from "../servicess/upload.js";
+import { authenticateUser } from '../middlewares/authMiddleware.js';
+
 
 const router = express.Router();
 
 router.get("/", getAllProducts);
-router.get("/:id", getProductById);
-router.post("/", upload.array("images", 5), createProduct);
-router.put("/:id", upload.array("images", 5), updateProduct);
-router.delete("/:id", deleteProduct);
+router.get("/:id",getproductById );
+router.post("/", authenticateUser,upload.fields([{ name: "images", maxCount: 5 }]), createProduct);
+router.put("/:id", authenticateUser,upload.fields([{ name: "images", maxCount: 5 }]), updateProduct);
+router.delete("/:id",authenticateUser, productDelete);
 
 export default router;

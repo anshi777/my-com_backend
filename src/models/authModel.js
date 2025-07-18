@@ -20,6 +20,8 @@ const authSchema = new Schema(
       type: String,
       required: true,
     },
+    img:{type:String},
+    coverImg:{type:String},
     role: {
       type: String,
       enum: ["user", "seller", "admin"],
@@ -56,13 +58,6 @@ const authSchema = new Schema(
   },
   { timestamps: true }
 );
-
-// authSchema.pre("save", async function (next) {
-//   if (this.isModified("password")) return next();
-
-//   this.password = await bcrypt.hash(this.password, 10);
-//   next();
-// });
 
 authSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);

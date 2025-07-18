@@ -5,7 +5,7 @@ import {
   sendLogoutMail,
 } from "../servicess/email.js";
 import AuthModel from "../models/authModel.js";
-import bcryptjs from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { generateOtp } from "../utils/Otp.js";
 import { asyncHandler } from "../utils/ayncHandler.js";
 import { generateAccessAndRefreshToken } from "../helper/tokens.js";
@@ -17,43 +17,42 @@ export const registerUser = asyncHandler(async (req, res) => {
     if ([name, email, password].some((field) => field?.trim() === "")) {
       return res
         .status(400)
-        .json({ success: false, message: "all fields are required" });
+        .json({ success: false, message: "All fields are required" });
     }
     const userExist = await AuthModel.findOne({ email });
     if (userExist) {
-      console.log("user already exist..");
-      return res.status(400).json({
-        success: false,
-        message: "user already exist,plese logIn...",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
     }
 
-    const haspassword = await bcryptjs.hashSync(password, 10);
-    const Otp = generateOtp();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = generateOtp();
+    const img = req.files?.img?.[0]?.path;
+    const coverImg = req.files?.coverImg?.[0]?.path;
+
     const user = new AuthModel({
       name,
       email,
-      password: haspassword,
-      verificationCode: Otp,
+      password: hashedPassword,
+      verificationCode: otp,
+      img,
+      coverImg,
     });
+
     await user.save();
-    sendOtp(user.email, Otp);
-    return res
-      .status(201)
-      .json({
-        success: true,
-        message: "user Register successfull...",
-        data: user,
-      });
+    sendOtp(user.email, otp);
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      data: user,
+    });
   } catch (error) {
-    console.log(error, "something went wrong in server ...");
+    console.error(error);
     return res
       .status(500)
-      .json({
-        success: false,
-        message: "internal server error...",
-        data: error,
-      });
+      .json({ success: false, message: "Internal server error", error });
   }
 });
 
@@ -97,7 +96,6 @@ export const verification = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while resending OTP.",
-      data: error,
     });
   }
 };
@@ -142,7 +140,6 @@ export const resendOtp = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while resending OTP.",
-      data: error,
     });
   }
 };
@@ -242,12 +239,9 @@ export const logoutAuth = async (req, res) => {
       });
   } catch (error) {
     console.log("Logout failed:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error during logout.",
-        data: error,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Server error during logout.",
+    });
   }
 };
