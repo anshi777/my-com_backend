@@ -13,7 +13,6 @@ import { generateAccessAndRefreshToken } from "../helper/tokens.js";
 export const registerUser = asyncHandler(async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     if ([name, email, password].some((field) => field?.trim() === "")) {
       return res
         .status(400)
@@ -28,25 +27,24 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOtp();
-    const img = req.files?.img?.[0]?.path;
-    const coverImg = req.files?.coverImg?.[0]?.path;
+    // const img = req.files?.img?.[0]?.path;
+    // const coverImg = req.files?.coverImg?.[0]?.path;
 
     const user = new AuthModel({
       name,
       email,
       password: hashedPassword,
       verificationCode: otp,
-      img,
-      coverImg,
     });
 
     await user.save();
     sendOtp(user.email, otp);
+    const { password: _, verificationCode, ...safeUser } = user.toObject();
 
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: user,
+      data: safeUser,
     });
   } catch (error) {
     console.error(error);
@@ -178,6 +176,7 @@ export const loginAuth = async (req, res) => {
       secure: true,
     };
     await sendLoginMail(email, user.name);
+    const { password: _ ,...safeUser} = user.toObject();
 
     return res
       .status(200)
@@ -188,6 +187,7 @@ export const loginAuth = async (req, res) => {
         accessToken,
         refreshToken,
         message: "User logged in successfully.",
+        data:safeUser,
       });
   } catch (error) {
     console.log("User Login failed for server error..", error);
@@ -239,6 +239,31 @@ export const logoutAuth = async (req, res) => {
       });
   } catch (error) {
     console.log("Logout failed:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error during logout.",
+    });
+  }
+};
+
+export const loginWithGoogle = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user._id
+    );
+    await user.save();
+    const { password: _ ,...safeUser} = user.toObject();
+
+    return res.json({
+      success: true,
+      message: "Google login successful",
+      accessToken,
+      refreshToken,
+      data: safeUser,
+    });
+  } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Server error during logout.",

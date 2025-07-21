@@ -57,7 +57,7 @@ export const updateUser = async (req, res) => {
     const { _id } = req.params;
     if (!_id)
       return res
-        .status(400)
+        .status(404)
         .json({ success: false, message: "User ID is required" });
 
     const updates = { ...req.body };

@@ -10,13 +10,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "init": "^0.1.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.3",
@@ -25,6 +26,20 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.5",
     "nodemodule": "^0.3.0",
-    "nodemon": "^3.1.10"
-  }
+    "nodemon": "^3.1.10",
+    "npm": "^11.4.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anshi777/my-com_backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/anshi777/my-com_backend/issues"
+  },
+  "homepage": "https://github.com/anshi777/my-com_backend#readme",
+  "description": ""
 }
