@@ -9,14 +9,14 @@ import {
   resendOtp,
   verification,
 } from "../controllers/authController.js";
-import { authenticateUser } from "../middlewares/authMiddleware.js";
+import { verifyTokenWithRefresh } from "../middlewares/authMiddleware.js";
 const route = express.Router();
 
 route.post("/register", registerUser);
 route.post("/otp", verification);
 route.post("/resendOtp", resendOtp);
 route.post("/login", loginAuth);
-route.post("/logout", authenticateUser, logoutAuth);
+route.post("/logout", verifyTokenWithRefresh, logoutAuth);
 route.get("/google",passport.authenticate("google", { scope: ["profile", "email"] })
 );
 

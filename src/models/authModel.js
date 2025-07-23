@@ -20,8 +20,8 @@ const authSchema = new Schema(
       type: String,
       required: true,
     },
-    img:{type:String},
-    coverImg:{type:String},
+    img: { type: String },
+    coverImg: { type: String },
     role: {
       type: String,
       enum: ["user", "seller", "admin"],

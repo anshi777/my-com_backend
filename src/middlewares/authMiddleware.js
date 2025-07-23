@@ -2,33 +2,6 @@ import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import AuthModel from "../models/authModel.js";
 
-export const authenticateUser = async (req, res, next) => {
-  try {
-    const token = req.cookies?.refreshToken;
-
-    if (!token) {
-    throw new ApiError(401, "Refresh token missing. Please login.");
-    }
-    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN);
-    if (!decoded) {
-      throw new ApiError(401, "Invalid token.");
-    }
-    const user = await AuthModel.findById(decoded._id);
-    if (!user) {
-      throw new ApiError(404, "User not found.");
-    }
-
-    req.user = user; 
-    next();
-  } catch (err) {
-    console.error("Auth Middleware Error:", err);
-    res
-      .status(err.statusCode || 500)
-      .json({ success: false, message: err.message || "Unauthorized" });
-  }
-};
-
-
 export const authUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -39,7 +12,7 @@ export const authUser = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN); 
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN); 
     const user = await AuthModel.findById(decoded._id).select('-password'); 
 
     if (!user) {
@@ -49,7 +22,51 @@ export const authUser = async (req, res, next) => {
     req.user = { id: user._id }; 
     next();
   } catch (error) {
-    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    return res.status(401).json({ success: false, message: 'Invalid or expired token..' });
+  }
+};
+
+export const verifyTokenWithRefresh = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const accessToken = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+
+  try {
+    if (accessToken) {
+      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+      req.user = decoded;
+      return next();
+    }
+  } catch (err) {
+    if (err.name !== "TokenExpiredError") {
+      return res.status(403).json({ message: "Invalid access token" });
+    }
+  }
+
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Please log-in token missing" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+    const user = await AuthModel.findById(decoded._id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    // const newAccessToken = jwt.sign(
+    //   { _id: user._id, email: user.email }, 
+    //   process.env.ACCESS_TOKEN,
+    //   { expiresIn: "15m" } 
+    // );
+    const newAccessToken = user.generateAccessToken()
+
+    res.setHeader("x-access-token", newAccessToken);
+    req.user = { _id: user._id, email: user.email };
+    return next();
+  } catch (err) {
+    return res.status(401).json({ message: "Refresh token expired or invalid. Please log in." });
   }
 };
 

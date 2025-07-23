@@ -76,19 +76,20 @@ export const verification = async (req, res) => {
     const options = {
       httpOnly: true,
       secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     };
     await sendWelcomeEmail(user.email, user.name);
 
-    return res
-      .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
-      .json({
-        success: true,
-        accessToken,
-        refreshToken,
-        message: "email verified successfully..",
-      });
+    return (
+      res
+        .status(200)
+        .cookie("refreshToken", refreshToken, options)
+        .json({
+          success: true,
+          accessToken,
+          message: "email verified successfully..",
+        })
+    );
   } catch (error) {
     console.log("verification failed for server error..", error);
     return res.status(500).json({
@@ -156,7 +157,7 @@ export const loginAuth = async (req, res) => {
 
     if (!user) {
       return res
-        .status(401)
+        .status(404)
         .json({ success: false, message: "User not found." });
     }
 
@@ -174,21 +175,22 @@ export const loginAuth = async (req, res) => {
     const options = {
       httpOnly: true,
       secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     };
     await sendLoginMail(email, user.name);
-    const { password: _ ,...safeUser} = user.toObject();
+    const { password: _, ...safeUser } = user.toObject();
 
-    return res
-      .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
-      .json({
-        success: true,
-        accessToken,
-        refreshToken,
-        message: "User logged in successfully.",
-        data:safeUser,
-      });
+    return (
+      res
+        .status(200)
+        .cookie("refreshToken", refreshToken, options)
+        .json({
+          success: true,
+          accessToken,
+          message: "User logged in successfully.",
+          data: safeUser,
+        })
+    );
   } catch (error) {
     console.log("User Login failed for server error..", error);
     return res
@@ -227,6 +229,7 @@ export const logoutAuth = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     };
     await sendLogoutMail(email, email.name);
     return res
@@ -254,13 +257,12 @@ export const loginWithGoogle = async (req, res) => {
       user._id
     );
     await user.save();
-    const { password: _ ,...safeUser} = user.toObject();
+    const { password: _, ...safeUser } = user.toObject();
 
-    return res.json({
+    return res.status(200).cookie("refreshToken", refreshToken, options).json({
       success: true,
       message: "Google login successful",
       accessToken,
-      refreshToken,
       data: safeUser,
     });
   } catch (error) {
