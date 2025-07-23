@@ -3,6 +3,7 @@ import passport from "passport";
 import "../servicess/passport.js";
 import {
   loginAuth,
+  loginWithGit,
   loginWithGoogle,
   logoutAuth,
   registerUser,
@@ -17,31 +18,9 @@ route.post("/otp", verification);
 route.post("/resendOtp", resendOtp);
 route.post("/login", loginAuth);
 route.post("/logout", verifyTokenWithRefresh, logoutAuth);
-route.get("/google",passport.authenticate("google", { scope: ["profile", "email"] })
-);
+route.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+route.get("/google/callback", passport.authenticate("google", { session: false }), loginWithGoogle);
+route.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
+route.get("/github/callback", passport.authenticate("github", { session: false }), loginWithGit);
 
-// route.get(
-//   "/google/callback",
-//   passport.authenticate("google", {
-//     successRedirect: "/success",
-//     failureRedirect: "/failure",
-//   })
-// );
-
-// // Success route
-// route.get("/success", (req, res) => {
-//   console.log("User data:", req.user);
-//   res.send("✅ Google Login Successful");
-// });
-
-// // Failure route
-// route.get("/failure", (req, res) => {
-//   res.send("❌ Google Login Failed");
-// });
-
-route.get(
-  "/google/callback",
-  passport.authenticate("google", { session: false }),
-  loginWithGoogle
-);
 export default route;

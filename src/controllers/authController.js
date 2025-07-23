@@ -80,16 +80,11 @@ export const verification = async (req, res) => {
     };
     await sendWelcomeEmail(user.email, user.name);
 
-    return (
-      res
-        .status(200)
-        .cookie("refreshToken", refreshToken, options)
-        .json({
-          success: true,
-          accessToken,
-          message: "email verified successfully..",
-        })
-    );
+    return res.status(200).cookie("refreshToken", refreshToken, options).json({
+      success: true,
+      accessToken,
+      message: "email verified successfully..",
+    });
   } catch (error) {
     console.log("verification failed for server error..", error);
     return res.status(500).json({
@@ -180,17 +175,12 @@ export const loginAuth = async (req, res) => {
     await sendLoginMail(email, user.name);
     const { password: _, ...safeUser } = user.toObject();
 
-    return (
-      res
-        .status(200)
-        .cookie("refreshToken", refreshToken, options)
-        .json({
-          success: true,
-          accessToken,
-          message: "User logged in successfully.",
-          data: safeUser,
-        })
-    );
+    return res.status(200).cookie("refreshToken", refreshToken, options).json({
+      success: true,
+      accessToken,
+      message: "User logged in successfully.",
+      data: safeUser,
+    });
   } catch (error) {
     console.log("User Login failed for server error..", error);
     return res
@@ -251,24 +241,55 @@ export const logoutAuth = async (req, res) => {
 
 export const loginWithGoogle = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(400).json({
+        success: false,
+        message: "No user information provided by Google strategy",
+      });
+    }
     const user = req.user;
-
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       user._id
     );
     await user.save();
     const { password: _, ...safeUser } = user.toObject();
 
-    return res.status(200).cookie("refreshToken", refreshToken, options).json({
+    return res.status(200).cookie("refreshToken", refreshToken).json({
       success: true,
       message: "Google login successful",
       accessToken,
       data: safeUser,
     });
   } catch (error) {
+    console.error("Google login error:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error during logout.",
+      message: "Server error during logout....",
+    });
+  }
+};
+
+export const loginWithGit = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user._id
+    );
+    await user.save();
+
+    const { password: _, ...safeUser } = user.toObject();
+
+    return res.status(200).cookie("refreshToken", refreshToken).json({
+      success: true,
+      message: "Login with GitHub successful",
+      accessToken,
+      data: safeUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error during GitHub login.",
     });
   }
 };
