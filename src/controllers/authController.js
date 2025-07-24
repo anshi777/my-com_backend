@@ -253,8 +253,13 @@ export const loginWithGoogle = async (req, res) => {
     );
     await user.save();
     const { password: _, ...safeUser } = user.toObject();
-
-    return res.status(200).cookie("refreshToken", refreshToken).json({
+    const options = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+    return res.status(200).cookie("refreshToken", refreshToken,options).json({
       success: true,
       message: "Google login successful",
       accessToken,
@@ -279,8 +284,13 @@ export const loginWithGit = async (req, res) => {
     await user.save();
 
     const { password: _, ...safeUser } = user.toObject();
-
-    return res.status(200).cookie("refreshToken", refreshToken).json({
+    const options = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+    return res.status(200).cookie("refreshToken", refreshToken,options).json({
       success: true,
       message: "Login with GitHub successful",
       accessToken,
